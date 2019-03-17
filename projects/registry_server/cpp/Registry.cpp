@@ -94,6 +94,11 @@ void Registry::start()
   using namespace std::placeholders;
   _impl->subscription_listiner.async_receive(std::bind(&Implementation::process_subscription_message, _impl.get(), _1));
 }
+void Registry::wait()
+{
+  _impl->subscription_listiner.join();
+  _impl->service_broadcaster.join();
+}
 //-----------------------------------------------------------------------------
 void Registry::shutdown()
 {

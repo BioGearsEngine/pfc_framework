@@ -29,6 +29,9 @@ else()
     endforeach(OUTPUTCONFIG)
 endif()
 
+set(Boost_USE_STATIC_LIBS  OFF)
+find_package(Boost COMPONENTS system thread program_options signals log REQUIRED)
+
 ###############################################################################
 # Step 2: Project Includes are generally order dependent.  So manually maintain
 #         this list

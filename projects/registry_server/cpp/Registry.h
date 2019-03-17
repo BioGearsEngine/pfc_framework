@@ -25,6 +25,7 @@ public:
   ~Registry();
 
   void start();
+  void wait();
   void shutdown();
 
   bool is_valid();

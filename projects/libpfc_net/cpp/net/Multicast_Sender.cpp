@@ -8,6 +8,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <boost/asio/buffered_stream.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/asio/streambuf.hpp>
 
 namespace pfc {

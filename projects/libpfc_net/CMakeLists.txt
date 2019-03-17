@@ -23,8 +23,6 @@ set(${PREFIX}_UNIT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/unit" PARENT_SCOPE)
 # Requirments
 ###############################################################################
 find_package(nanomsg REQUIRED)
-set(Boost_USE_STATIC_LIBS  OFF)
-find_package(Boost COMPONENTS system thread REQUIRED)
 ###############################################################################
 #Code Generation
 ###############################################################################
@@ -96,6 +94,7 @@ set(${PREFIX}_LIBS
       ${CMAKE_DL_LIBS}
 	  nanomsg
 	  Boost::disable_autolinking
+	  Boost::dynamic_linking
 	  Boost::system
 	  Boost::thread
 )

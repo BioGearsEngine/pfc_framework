@@ -91,6 +91,9 @@ set(${PREFIX}_LIBS
       ${CMAKE_THREAD_LIBS_INIT}
       ${CMAKE_DL_LIBS}
 	  sustain::pfc_nw
+	  Boost::program_options
+	  Boost::log
+
 )
 
 set(${PREFIX}_LIBS ${${PREFIX}_LIBS} PARENT_SCOPE)

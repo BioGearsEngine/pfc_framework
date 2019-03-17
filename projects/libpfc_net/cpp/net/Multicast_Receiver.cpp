@@ -4,6 +4,8 @@
 
 #include <boost/asio/ip/multicast.hpp>
 #include <boost/asio/ip/udp.hpp>
+#include <boost/asio/signal_set.hpp>
+#include <boost/log/trivial.hpp>
 #include <boost/system/error_code.hpp>
 
 namespace pfc {
@@ -129,8 +131,8 @@ void Multicast_Receiver::async_receive(std::function<void(std::istream&)> proces
 //! This function waits until no pending work is done.
 void Multicast_Receiver::join()
 {
-  if( _impl->multicast_async_receive_thread.joinable() )
-  _impl->multicast_async_receive_thread.join();
+  if (_impl->multicast_async_receive_thread.joinable())
+    _impl->multicast_async_receive_thread.join();
 }
 //-----------------------------------------------------------------------------
 //! This function waits until no pending work is done.
