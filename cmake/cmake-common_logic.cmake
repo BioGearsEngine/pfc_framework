@@ -100,7 +100,7 @@ function(add_source_files var)
       source_group("${_l_SOURCE_GROUP}" FILES ${__new_entries})
     endif()
     if(_l_DEBUG)
-      #message(STATUS "CHILDLIST( result ${_l_LOCATION})")
+      message(STATUS "CHILDLIST( result ${_l_LOCATION})")
     endif()
     CHILDLIST( result ${_l_LOCATION})
     

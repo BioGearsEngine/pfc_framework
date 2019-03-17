@@ -38,7 +38,7 @@ message(STATUS "Configuring ${PROJECT_NAME}")
 #Scenario Driver
 
 add_source_files(HDRS LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/include/sustain 
-                 REGEX "*.h" "*.hpp" SOURCE_GROUP  "Headers\\Public" DEBUG)
+                 REGEX "*.h" "*.hpp" SOURCE_GROUP  "Headers\\Public")
 add_source_files(HDRS LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/cpp 
                  REGEX "*.h" "*.hpp" SOURCE_GROUP  "Headers\\Private")
 add_source_files(SRCS LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/cpp 

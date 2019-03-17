@@ -11,8 +11,8 @@ if(${ROOT_PROJECT_NAME}_BUILD_NETWORKING)
 ###############################################################################
 # Base Variables
 ###############################################################################
-set(PROJECT_NAME pfc_registry)
-set(PREFIX registry)
+set(PROJECT_NAME survey)
+set(PREFIX survey)
 
 set(${PREFIX}_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 set(${PREFIX}_PRIVATE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cpp" )
@@ -91,6 +91,7 @@ set(${PREFIX}_LIBS
       ${CMAKE_THREAD_LIBS_INIT}
       ${CMAKE_DL_LIBS}
 	  sustain::pfc_nw
+	  
 )
 
 set(${PREFIX}_LIBS ${${PREFIX}_LIBS} PARENT_SCOPE)

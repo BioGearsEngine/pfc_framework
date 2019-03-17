@@ -11,8 +11,8 @@ if(${ROOT_PROJECT_NAME}_BUILD_NETWORKING)
 ###############################################################################
 # Base Variables
 ###############################################################################
-set(PROJECT_NAME pfc_service_example)
-set(PREFIX service)
+set(PROJECT_NAME pubsub)
+set(PREFIX pubsub)
 
 set(${PREFIX}_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 set(${PREFIX}_PRIVATE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cpp" )
@@ -30,7 +30,6 @@ set(${PREFIX}_UNIT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/unit" PARENT_SCOPE)
 ###############################################################################
 #Sorce and Header Defines
 ###############################################################################
-message(STATUS "")
 message(STATUS "Configuring ${PROJECT_NAME}")
 
 #Scenario Driver
@@ -108,6 +107,4 @@ endif()
      LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR}
      ARCHIVE DESTINATION lib
   )
-
-message(STATUS "")
 endif()
