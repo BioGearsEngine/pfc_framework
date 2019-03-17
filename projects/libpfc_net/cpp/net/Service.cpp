@@ -1,4 +1,4 @@
-#include <sustain/framework/Service.h>
+#include <sustain/framework/net/Service.h>
 
 #include <sustain/framework/Protocol.h>
 #include <sustain/framework/net/Multicast_Receiver.h>

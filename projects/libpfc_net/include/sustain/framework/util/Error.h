@@ -5,6 +5,7 @@
 #include <ostream>
 
 #include <sustain/framework/Exports.h>
+#include <sustain/framework/util/Constants.h>
 namespace pfc {
 
 class SUSTAIN_FRAMEWORK_API Error {

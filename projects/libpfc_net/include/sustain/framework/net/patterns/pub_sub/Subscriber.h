@@ -1,48 +1,18 @@
-#ifndef SUSTAIN_SERVICE_H
-#define SUSTAIN_SERVICE_H
+#ifndef SUSTAIN_FRAMEWORK_NET_PATTERNS_PUBSUB_SUBSCRIBER_H
+#define SUSTAIN_FRAMEWORK_NET_PATTERNS_PUBSUB_SUBSCRIBER_H
 
-//!
-//! \author Steven A White
-//! \date   2019-02-14
-//!
-//! \brief Defines a Subscriber Subscriber Class
-//!        Class meets the speficiation of the Sustain Framework
-//!
-
-#include <memory>
-#include <string>
-#include <cstdint>
-#include <functional>
-
-#include <sustain/framework/util/Error.h>
-#include <sustain/framework/util/Constants.h>
+#include <sustain/framework/net/Patterns.h>
 
 namespace pfc {
-class SUSTAIN_FRAMEWORK_API Subscriber {
-public:
-  Subscriber(std::string service_name, std::string multicast_address);
-  Subscriber(const Subscriber&) = delete;
-  Subscriber(Subscriber&&);
-  ~Subscriber();
+class SUSTAIN_FRAMEWORK_API PubSub_Subscriber : public Listiner {
+  ~PubSub_Subscriber() final;
 
-  std::string address();
-  uint16_t port();
+  void listen(std::function<void(void)>) final;
+  void async_listen(std::function<void(void)>) final;
 
-  void send( std::ostream& );
-  void async_send( std::ostream& );
-
-  bool Valid();
-  Error Error();
-
-  Subscriber& operator=(const Subscriber&) = delete;
-  Subscriber& operator=(Subscriber&&);
-
-private:
-  struct Implementation;
-  #pragma warning(suppress:4251)
-  std::unique_ptr<Implementation> _impl;
-
+  void standup() final;
+  void shutdown() final;
 };
 } //namespace pfc
 
-#endif //SUSTAIN_SERVICE_H
+#endif //SUSTAIN_FRAMEWORK_NET_PATTERNS_PUBSUB_SUBSCRIBER_H

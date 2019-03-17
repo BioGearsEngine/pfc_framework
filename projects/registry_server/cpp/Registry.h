@@ -17,7 +17,7 @@
 #include <sustain/framework/util/Constants.h>
 
 namespace pfc {
-class SUSTAIN_FRAMEWORK_API Registry {
+class Registry {
 public:
   Registry(std::string bind_address, std::string multicast_address);
   Registry(const Registry&) = delete;
