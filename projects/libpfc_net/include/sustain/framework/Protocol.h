@@ -2,18 +2,18 @@
 #define SUSTAIN_PFCNW_PROTOCOL_H
 
 #include <sustain/framework/Exports.h>
-#include <sustain/framework/Error.h>
+#include <sustain/framework/util/Error.h>
 
 #include <cstdint>
 #include <cstring>
+#include <iostream>
 #include <istream>
 #include <vector>
-#include <iostream>
 
 using std::uint32_t;
 
 #pragma warning(push)
-#pragma warning(disable:4251)
+#pragma warning(disable : 4251)
 namespace pfc {
 //-----------------------------------------------------------------------
 //ICD 3. Message Data Types
@@ -30,9 +30,10 @@ using pfc_double = double;
 using pfc_string = std::string;
 using pfc_datetime = uint32_t;
 
-enum pfc_protocol : pfc_byte { udp,
-                               tcp };
+enum pfc_protocol : pfc_byte { pub_sub,
+                               req_req };
 
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_protocol&);
 constexpr pfc_bool pfc_true = true;
 constexpr pfc_bool pfc_false = false;
 
@@ -59,122 +60,46 @@ constexpr pfc_uint MESSAGE_TYPE_NOT_ASSIGNED = 0x00000000;
 constexpr pfc_uint SERVICE_REGISTRY_REQUEST = 0x00000001;
 constexpr pfc_uint SERVICE_REGISTRY_RESPONSE = 0x10000001;
 
-struct SUSTAIN_FRAMEWORK_API pfc_service_registry_request : pfc_message {
+struct SUSTAIN_FRAMEWORK_API pfc_service_announcment : pfc_message {
   pfc_uint _message_type = SERVICE_REGISTRY_REQUEST;
   pfc_ushort _port;
-  pfc_protocol _protacol = pfc_protocol::udp;
+  pfc_protocol _protacol = pfc_protocol::pub_sub;
   pfc_string _name;
   pfc_string _address;
   pfc_string _brief;
 
-  ~pfc_service_registry_request() override;
+  ~pfc_service_announcment() override;
 
   size_t Length() const override;
   pfc_uint Type() const override;
-  Error serialize(std::ostream& result) const override;
-  Error deserialize(std::istream& data) override;
+  Error serialize(std::ostream& os) const override;
+  Error deserialize(std::istream& is) override;
 };
-
-struct SUSTAIN_FRAMEWORK_API pfc_service_registry_response : pfc_message {
-  pfc_uint _message_type = SERVICE_REGISTRY_RESPONSE;
-
-  size_t Length() const override;
-  pfc_uint Type() const override;
-  Error serialize(std::ostream& result) const override;
-  Error deserialize(std::istream& data) override;
-};
-
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_service_announcment&);
 //-----------------------------------------------------------------------
 // Comparison Operators
 //-----------------------------------------------------------------------
-bool SUSTAIN_FRAMEWORK_API operator==(const pfc_service_registry_request&, const pfc_service_registry_request&);
-bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_service_registry_request&, const pfc_service_registry_request&);
-bool SUSTAIN_FRAMEWORK_API operator==(const pfc_service_registry_response&, const pfc_service_registry_response&);
-bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_service_registry_response&, const pfc_service_registry_response&);
-/**
-  *!  Serialization functions for ngss types
-  **/
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_byte&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_char&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_ushort&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_short&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_uint&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_int&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_float&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_double&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_string&);
-Error SUSTAIN_FRAMEWORK_API serialize_pfc_type(std::ostream&, const pfc_protocol&);
-
-template <typename T, size_t N>
-Error serialize_pfc_type(std::ostream& is, T (&val)[N])
-{
-  constexpr size_t size = sizeof(T) * N;
-  is.write(reinterpret_cast<const char*>(&val[0]), size - 1);
-  return Error();
-}
-
-template <typename T, typename... VAR>
-Error serialize_pfc_type(std::ostream& buffer, const T& first, const VAR&... args)
-{
-  auto error = serialize_pfc_type(buffer, first);
-  return error |= serialize_pfc_type(buffer, args...);
-}
-/**
-  *!  De-serialization functions for ngss types
-  *!  begin - [in]  iterator to a const vector.  Assumption that all iterators are valid for the life of the call
-  *!  end   - [out] iterator reference to a const vector.  Points to the next unused byte in the vector.
-  **/
-
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_byte& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_char& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_ushort& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_short& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_uint& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_int& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_float& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_double& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_string& result);
-Error SUSTAIN_FRAMEWORK_API deserialize_pfc_type(std::istream&, pfc_protocol& result);
-template <typename T, int N>
-Error deserialize_pfc_type(std::istream& os, T (&result)[N])
-{
-  constexpr size_t size = sizeof(T) * N;
-
-  os.write(&result[0], size);
-  os.write('\0', sizeof('\0'));
-  return Error();
-}
-
-inline Error deserialize_pfc_type(std::istream& os)
-{
-  return Error();
-}
-
-template <typename T, typename... VAR>
-Error deserialize_pfc_type(std::istream& os,
-                           T& first, VAR&... args)
-{
-  auto error = deserialize_pfc_type(os, first);
-  error |= deserialize_pfc_type(os, args...);
-  return error;
-}
-
+bool SUSTAIN_FRAMEWORK_API operator==(const pfc_service_announcment&, const pfc_service_announcment&);
+bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_service_announcment&, const pfc_service_announcment&);
 /**
   *!  sizeof for pfc_types
   *!  Most just call sizeof, but char[]
   *!  return strlen +/- null terminal
   **/
-constexpr size_t size_of_pfc_type(void);
-size_t SUSTAIN_FRAMEWORK_API size_of_pfc_type(const pfc_byte& result);
-size_t SUSTAIN_FRAMEWORK_API size_of_pfc_type(const pfc_char& result);
-size_t SUSTAIN_FRAMEWORK_API size_of_pfc_type(const pfc_uint& result);
-size_t SUSTAIN_FRAMEWORK_API size_of_pfc_type(const pfc_int& result);
-size_t SUSTAIN_FRAMEWORK_API size_of_pfc_type(const pfc_float& result);
-size_t SUSTAIN_FRAMEWORK_API size_of_pfc_type(const pfc_double& result);
-size_t SUSTAIN_FRAMEWORK_API size_of_pfc_type(const std::vector<pfc_byte>& result);
+template <typename T>
+size_t size_of_pfc_type(const T& result)
+{
+  return sizeof(result);
+}
+
+template <>
+inline size_t size_of_pfc_type(const std::string& result)
+{
+  return result.length() * sizeof(std::string::value_type);
+}
 
 template <typename T, size_t N>
-int size_of_pfc_type(const T (&)[N])
+size_t size_of_pfc_type(const T (&)[N])
 {
   constexpr size_t size = sizeof(T) * N;
   return size - 1;
@@ -190,7 +115,106 @@ size_t size_of_pfc_type(const T& first, const VAR&... args)
 {
   return size_of_pfc_type(first) + size_of_pfc_type(args...);
 }
-#pragma warning( pop)
+/**
+  *!  Serialization functions for ngss types
+  **/
+template <typename T>
+Error serialize_pfc_type(std::ostream& os, const T& data)
+{
+  os.write(reinterpret_cast<const char*>(&data), size_of_pfc_type(data));
+  if (os.good()) {
+    return Success();
+  } else {
+    return Error(Error::Code::PFC_IP_SERIALIZATION_ERROR);
+  }
+}
+
+template <>
+inline Error serialize_pfc_type(std::ostream& os, const pfc_string& data)
+{
+  auto size = size_of_pfc_type(data);
+  os.write(reinterpret_cast<const char*>(&size), size_of_pfc_type(size));
+  os.write(reinterpret_cast<const char*>(data.data()), size);
+  if (os.good()) {
+    return Success();
+  } else {
+    return Error(Error::Code::PFC_IP_SERIALIZATION_ERROR);
+  }
+}
+
+template <typename T, size_t N>
+Error serialize_pfc_type(std::ostream& is, T (&val)[N])
+{
+  constexpr size_t size = size_of_pfc_type(T) * N;
+  is.write(reinterpret_cast<const char*>(&val[0]), size - 1);
+  return Success();
+}
+
+template <typename T, typename... VAR>
+Error serialize_pfc_type(std::ostream& buffer, const T& first, const VAR&... args)
+{
+  auto error = serialize_pfc_type(buffer, first);
+  return error |= serialize_pfc_type(buffer, args...);
+}
+/**
+  *!  De-serialization functions for ngss types
+  *!  begin - [in]  iterator to a const vector.  Assumption that all iterators are valid for the life of the call
+  *!  end   - [out] iterator reference to a const vector.  Points to the next unused byte in the vector.
+  **/
+
+template <typename T>
+Error deserialize_pfc_type(std::istream& is, T& result)
+{
+  if (is.good()) {
+    is.read(reinterpret_cast<char*>(&result), size_of_pfc_type(result));
+    return Success();
+  } else {
+    return Error(Error::Code::PFC_IP_SERIALIZATION_ERROR);
+  }
+}
+
+template <>
+inline Error deserialize_pfc_type(std::istream& is, pfc_string& result)
+{
+  //TODO:Fix \0 contained in original string;
+  auto size = result.size();
+  if (is.good()) {
+    is.read(reinterpret_cast<char*>(&size), size_of_pfc_type(size));
+    result.resize(size);
+    if (is.good()) {
+      is.read(const_cast<char*>(result.data()), size_of_pfc_type(result));
+    } else {
+      return Error(Error::Code::PFC_IP_SERIALIZATION_ERROR);
+    }
+    return Success();
+  } else {
+    return Error(Error::Code::PFC_IP_SERIALIZATION_ERROR);
+  }
+}
+template <typename T, int N>
+Error deserialize_pfc_type(std::istream& os, T (&result)[N])
+{
+  constexpr size_t size = size_of_pfc_type(T) * N;
+
+  os.write(&result[0], size);
+  os.write('\0', size_of_pfc_type('\0'));
+  return Success();
+}
+
+inline Error deserialize_pfc_type(std::istream& os)
+{
+  return Success();
+}
+
+template <typename T, typename... VAR>
+Error deserialize_pfc_type(std::istream& os,
+                           T& first, VAR&... args)
+{
+  auto error = deserialize_pfc_type(os, first);
+  error |= deserialize_pfc_type(os, args...);
+  return error;
+}
+#pragma warning(pop)
 }
 
 #endif //SUSTAIN_PFCNW_PROTOCOL_H

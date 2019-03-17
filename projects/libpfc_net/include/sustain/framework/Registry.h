@@ -13,8 +13,8 @@
 #include <string>
 
 #include <sustain/framework/Exports.h>
-#include <sustain/framework/Error.h>
-#include <sustain/framework/Constants.h>
+#include <sustain/framework/util/Error.h>
+#include <sustain/framework/util/Constants.h>
 
 namespace pfc {
 class SUSTAIN_FRAMEWORK_API Registry {
@@ -25,11 +25,10 @@ public:
   ~Registry();
 
   void start();
-  void stop();
-  void join();
+  void shutdown();
 
-  bool Valid();
-  Error Error();
+  bool is_valid();
+  Error error();
 
   Registry& operator=(const Registry&) = delete;
   Registry& operator=(Registry&&);

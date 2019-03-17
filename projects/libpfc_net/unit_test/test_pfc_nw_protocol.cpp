@@ -50,13 +50,13 @@ TEST_F(TEST_FIXTURE_NAME, pfc_service_registry_request)
 {
   using namespace pfc;
 
-  pfc_service_registry_request outbound;
-  outbound._protacol = pfc_protocol::tcp;
+  pfc_service_announcment outbound;
+  outbound._protacol = pfc_protocol::pub_sub;
   outbound._port = 0xDEAD;
   outbound._address = "192.168.1.1";
   outbound._name    = "Unit Test Service";
   outbound._brief   = "is this the right thing";
-  pfc_service_registry_request inbound;
+  pfc_service_announcment inbound;
 
   std::stringstream ss;
   //

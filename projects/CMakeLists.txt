@@ -34,8 +34,8 @@ endif()
 #         this list
 ###############################################################################
 add_subdirectory(libpfc_net)
-add_subdirectory(registry_client)
-add_subdirectory(service_example)
+add_subdirectory(registry_server)
+add_subdirectory(simple_service)
 add_subdirectory(unit_test)
 ###############################################################################
 # Step 3: Global Doxygen configuration 

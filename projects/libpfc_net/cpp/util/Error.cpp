@@ -1,4 +1,4 @@
-#include <sustain/framework/Error.h>
+#include <sustain/framework/util/Error.h>
 
 namespace pfc {
 Error::Error()
@@ -26,12 +26,12 @@ bool Error::operator!=(const Error& rhs) const
   return !(_value == rhs._value);
 }
 //-----------------------------------------------------------------------------
-bool Error::operator==(const uint64_t& rhs) const
+bool Error::operator==(const Code& rhs) const
 {
   return _value & rhs;
 }
 //-----------------------------------------------------------------------------
-bool Error::operator!=(const uint64_t& rhs) const
+bool Error::operator!=(const Code& rhs) const
 {
   return !(_value == rhs);
 }
@@ -53,7 +53,15 @@ Error& Error::operator|=(const Error& rhs)
   _value |= rhs._value;
   return *this;
 }
-//-----------------------------------------------------------------------------4
+//-----------------------------------------------------------------------------
+Error Error::operator|(const Error& rhs) const { return {_value | rhs._value}; }
+//----------------------------------------------------------------------------
+Error Error::operator&(const Error& rhs) const { return {_value & rhs._value}; }
+//----------------------------------------------------------------------------
+Error Error::operator|(const Code& rhs) const { return  {_value | rhs}; }
+//----------------------------------------------------------------------------
+Error Error::operator&(const Code& rhs) const { return  {_value & rhs}; }
+//-----------------------------------------------------------------------------
 void Error::clear()
 {
   _value = Error::PFC_NONE;
