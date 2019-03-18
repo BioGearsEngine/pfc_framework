@@ -10,25 +10,27 @@
 //!
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
 
 #include <sustain/framework/util/Constants.h>
 #include <sustain/framework/util/Error.h>
-
+#include <sustain/framework/net/Uri.h>
 
 namespace pfc {
-  struct pfc_service_announcment;
+struct pfc_service_announcment;
 
 class SUSTAIN_FRAMEWORK_API Service {
 public:
   struct Config {
     enum protocol { pub_sub,
-                    req_rep } style;
+                    req_rep,
+                    survey,
+    } style;
     uint16_t port;
     std::string name;
-    std::string address;
+    URI address;
     std::string brief;
   };
 
@@ -49,8 +51,8 @@ public:
   void stop();
   void join();
 
-  bool valid()const ;
-  Error error() const ;
+  bool valid() const;
+  Error error() const;
 
   Service& operator=(const Service&) = delete;
   Service& operator=(Service&&);

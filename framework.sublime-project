@@ -3,6 +3,12 @@
 	[
 		{
 			"path": "projects"
+		},
+		{
+			"path": "cmake"
+		},
+		{
+			"path": "share"
 		}
 	]
 }

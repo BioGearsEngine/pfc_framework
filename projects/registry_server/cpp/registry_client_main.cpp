@@ -3,22 +3,27 @@
 
 #include "Registry.h"
 
-#include <boost/log/trivial.hpp>
-#include <boost/program_options.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/program_options.hpp>
 
 int main(int argc, const char* argv[])
 {
   namespace bpo = boost::program_options;
   bpo::options_description options("Allowed options");
-  options.add_options()("help", "Produce help message") //
-    ("bind", bpo::value<std::string>()->default_value("0::0"), "Server port bind address [0::0]") //
-    ("multicast", bpo::value<std::string>()->default_value("ff31::8000:1234"), "Server multicast broadcast address [ff31::8000:1234]");
+  options.add_options()("help,h", "Produce help message") //
+    ("bind,b", bpo::value<std::string>()->default_value("0::0"), "Server port bind address") //
+    ("multicast,m", bpo::value<std::string>()->default_value("ff31::8000:1234"), "Server multicast broadcast address");
 
   bpo::variables_map vm;
   bpo::store(bpo::parse_command_line(argc, argv, options), vm);
   bpo::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << options << "\n";
+    return 1;
+}
 
   std::unique_ptr<pfc::Registry> reg;
   try {
@@ -45,6 +50,8 @@ int main(int argc, const char* argv[])
   if (reg) {
     BOOST_LOG_TRIVIAL(info) << "Starting PFC Registry on " << vm["bind"].as<std::string>() << " broadcasting on " << vm["multicast"].as<std::string>() << "\n";
     reg->start();
+  } else {
+    BOOST_LOG_TRIVIAL(error) << "PFC Registry failed to start\n";
   }
   context.run();
 }

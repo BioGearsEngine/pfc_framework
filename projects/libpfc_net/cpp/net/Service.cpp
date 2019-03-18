@@ -64,7 +64,7 @@ Service::Service(const Config config, const std::string& multicast_bind_address,
   pfc_service_announcment service;
   service._name = config.name;
   service._protacol = (config.style == Config::pub_sub) ? pfc_protocol::pub_sub : pfc_protocol::req_req;
-  service._address = config.address;
+  service._address = config.address.c_str();
   service._brief = config.brief;
   service._port = config.port;
 
