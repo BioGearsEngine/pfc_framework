@@ -1,6 +1,7 @@
 #ifndef SUSTAIN_FRAMEWORK_NET_PATTERNS_PUBSUB_PUBLISHER_H
 #define SUSTAIN_FRAMEWORK_NET_PATTERNS_PUBSUB_PUBLISHER_H
 
+/*! \file */ 
 
 /**************************************************************************************
 copyright 2019 applied research associates, inc.
@@ -21,6 +22,13 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/net/Uri.h>
 
 namespace pfc {
+
+//!
+//! Publisher class for Pub/Sub mechanics
+//! A publisher is a source of messages that a
+//! subscriber will register with to receive publushed events.
+//! Follows the Broadcaster interface
+//!
 class SUSTAIN_FRAMEWORK_API PubSub_Publisher : public Broadcaster {
 public:
   PubSub_Publisher(URI);
@@ -36,6 +44,11 @@ public:
 
 private:
 #pragma warning(push, 0)
+
+//!
+  //!  @struct PubSub_Publisher::Implementation
+  //!  Private PIMPL implementation of PubSub_Publisher
+  //!
   struct Implementation;
   std::unique_ptr<Implementation> _impl;
 #pragma warning(pop)

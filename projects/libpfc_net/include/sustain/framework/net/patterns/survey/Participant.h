@@ -1,6 +1,8 @@
 #ifndef SUSTAIN_FRAMEWORK_NET_PATTERNS_SURVEY_PARTICIPANT_H
 #define SUSTAIN_FRAMEWORK_NET_PATTERNS_SURVEY_PARTICIPANT_H
 
+/*! \file */
+
 /**************************************************************************************
 copyright 2019 applied research associates, inc.
 licensed under the apache license, version 2.0 (the "license"); you may not use
@@ -21,6 +23,14 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/net/Uri.h>
 
 namespace pfc {
+//!
+//! This class creates a responder to a Survey style service
+//! <a href="https://nanomsg.org/gettingstarted/nng/survey.html"> Documentation </a>
+//!
+//! A Participant is free to respond to any Survey request and the sub ttotal of responses
+//! before a timeout will be used to determine the correct behavior on the Survetor
+//! This is usually a multicast style protocol
+
 class SUSTAIN_FRAMEWORK_API Survey_Participant : public Listiner {
 
   Survey_Participant(URI);

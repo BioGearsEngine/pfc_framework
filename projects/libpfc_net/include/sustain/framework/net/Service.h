@@ -17,7 +17,7 @@ specific language governing permissions and limitations under the license.
 //!
 //! \author Steven A White
 //! \date   2019-02-14
-//!
+//! \file
 //! \brief Defines a Service Service Class
 //!        Class meets the speficiation of the Sustain Framework
 //!
@@ -32,19 +32,36 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/net/Uri.h>
 
 namespace pfc {
-struct pfc_service_announcment;
+struct pfc_service_announcment; 
+
+//!
+//!  Base class for PFC Services.
+//!  Services can be any information providing broadcaster. All services will automatically register
+//!  with the PFC broker using UDP/Multicast on the braodcast channel provided at construction
+//!
+//!  Service Implementation can be pub_sub req_rep or survey and must be implemented by the derived class to provide
+//!  Functionality beyond registration
+//!
 
 class SUSTAIN_FRAMEWORK_API Service {
 public:
+
+  //!
+  //!  Configuration struct for the service. Defines teh connection information clients will use
+  //!  to work with the service once they receive word from the broadcast channel of its existance. 
+  //!  PFC Registry will store a service list provided a heartbeat continues to confirm the existance of a registrant.
+
   struct Config {
+    //!
+    //! Enum for specifying protocol
     enum protocol { pub_sub,
                     req_rep,
                     survey,
-    } style;
-    uint16_t port;
-    std::string name;
-    URI address;
-    std::string brief;
+    } style;                     //!< Style the service will use for interacting with clients
+    uint16_t port;               //!< Port the service runs on
+    std::string name;            //!< Human friendly name of the service
+    URI address;                 //!< Service URI other clients will use to connect to this service
+    std::string brief;           //!< Details the expected purpose of this service and possibly a guide on how to interact with it or where documentation can be found.
   };
 
   Service(const Config service, const std::string& multicast_bind_address, const std::string& registry_multicast_address);
@@ -73,7 +90,7 @@ public:
 private:
   struct Implementation;
 #pragma warning(suppress : 4251)
-  std::unique_ptr<Implementation> _impl;
+  std::unique_ptr<Implementation> _impl; //!< Pointer to Implementation
 };
 } //namespace pfc
 

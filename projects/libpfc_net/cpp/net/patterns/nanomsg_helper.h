@@ -13,11 +13,18 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+/*! \file */
+
 #include <sustain/framework/util/Error.h>
 
 #include <nanomsg/nn.h>
 
 namespace pfc {
+
+//!  
+//!  Converts nanomsg Errors to PFC Errors
+//!  \param code [IN] Known NanoMSG Error
+//!  \return Error - The convert PFC error message
 inline Error nano_to_Error(int code)
 {
   Error l_ec;

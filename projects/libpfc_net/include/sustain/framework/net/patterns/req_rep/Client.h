@@ -1,6 +1,8 @@
 #ifndef SUSTAIN_FRAMEWORK_NET_PATTERNS_REQREP_CLIENT_H
 #define SUSTAIN_FRAMEWORK_NET_PATTERNS_REQREP_CLIENT_H
 
+/*! \file */
+
 /**************************************************************************************
 copyright 2019 applied research associates, inc.
 licensed under the apache license, version 2.0 (the "license"); you may not use
@@ -19,6 +21,9 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/net/Uri.h>
 
 namespace pfc {
+//!
+//!  Request / Reply client used to connect to Request / Reply Servers
+//!
 class SUSTAIN_FRAMEWORK_API ReqRep_Client : public Broadcaster {
 public:
   ReqRep_Client(URI);

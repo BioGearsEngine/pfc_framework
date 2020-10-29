@@ -1,6 +1,8 @@
 #ifndef SUSTAIN_FRAMEWORK_NET_MULTICAST_SENDER_H
 #define SUSTAIN_FRAMEWORK_NET_MULTICAST_SENDER_H
 
+/*! \file */ 
+
 
 /**************************************************************************************
 copyright 2019 applied research associates, inc.
@@ -30,6 +32,9 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/util/Constants.h>
 
 namespace pfc {
+//!
+//!  Multicast_Sender class for sending UDP broadcast
+//!
 class SUSTAIN_FRAMEWORK_API Multicast_Sender {
 public:
   Multicast_Sender(std::string multicast_address, uint16_t port);
@@ -51,7 +56,7 @@ public:
 private:
   struct Implementation;
 #pragma warning(suppress:4251)
-  std::unique_ptr<Implementation> _impl;
+  std::unique_ptr<Implementation> _impl;     //!< Pointer to  Implementation
 
 };
 } //namespace pfc

@@ -1,6 +1,8 @@
 #ifndef SUSTAIN_FRAMEWORK_NET_PATTERNS_PUBSUB_SUBSCRIBER_H
 #define SUSTAIN_FRAMEWORK_NET_PATTERNS_PUBSUB_SUBSCRIBER_H
 
+/*! \file */
+
 /**************************************************************************************
 copyright 2019 applied research associates, inc.
 licensed under the apache license, version 2.0 (the "license"); you may not use
@@ -19,6 +21,13 @@ specific language governing permissions and limitations under the license.
 #include <memory>
 
 namespace pfc {
+//!
+//! This class creates a Subscriber to a Pub/Sub style service
+//! <a href="https://nanomsg.org/gettingstarted/nng/pubsub.html"> Documentation </a>
+//!
+//! Subscribers are normally passive consumers of Published information choosing to log
+//! All messages as they see fit but not sending anything to the Publisher after registering.
+
 class SUSTAIN_FRAMEWORK_API PubSub_Subscriber : public Listiner {
   PubSub_Subscriber(URI);
   ~PubSub_Subscriber() final;

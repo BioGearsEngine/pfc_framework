@@ -10,6 +10,8 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+/*! \file */
+
 #include <sustain/framework/net/patterns/pub_sub/Publisher.h>
 
 #include <iostream>
@@ -21,13 +23,25 @@ specific language governing permissions and limitations under the license.
 
 namespace pfc {
 
+//!
+//!  @struct nn_buffer
+//!  Streambuf implementation to allow us to return nanomessage buffers as streams
+//!
 struct nn_buffer : std::streambuf {
+  //! \param begin : Pointer to start of the streambuffer
+  //! \param end  :  Pointer to end of the contigious memory buffer.
+  //!
+  //!  Converts two pointers to a serious of contiguous memory in to a nanomsg buffer
   nn_buffer(char* begin, char* end)
   {
     this->setg(begin, begin, end);
   }
 };
 
+//!
+//!  @struct PubSub_Publisher::Implementation
+//!  Private PIMPL implementation of PubSub_Publisher
+//!
 struct PubSub_Publisher::Implementation {
   Implementation(URI&&);
   ~Implementation();
@@ -37,20 +51,21 @@ struct PubSub_Publisher::Implementation {
   Implementation& operator==(const Implementation&) = delete;
   Implementation& operator==(Implementation&&) = delete;
 
-  URI uri;
-  int socket;
-  int rv;
-  char* msg_buffer;
-  bool running;
+  URI uri;               //!<  URI of the service to be given to nano_msg
+  int socket;            //!<  Socket the service runs 
+  int rv;                //!<  return value of any nano_msg calls
+  char* msg_buffer;      //!<  msg_buffer nano_messages internal buffer
+  bool running;          //!<  Run control for async threading
 
   void publish();
 
-  std::thread pubsub_main_thread;
-  BroadcastFunc generate_message_func;
+  std::thread pubsub_main_thread; //!< Thread control for async braodcast request. 
+  BroadcastFunc generate_message_func; //!<  Callback for processing received broadcast
 
-  Error ec;
+  Error ec; //!< Current Error code of the system else Success()
 };
 //-------------------------------------------------------------------------------
+//! Deconstructor for Implementation - Shutsdown all pending nn activity and clears memory
 PubSub_Publisher::Implementation::~Implementation()
 {
   if(rv && socket)
@@ -69,6 +84,9 @@ PubSub_Publisher::Implementation::~Implementation()
   }
 }
 //-------------------------------------------------------------------------------
+//!
+//! URI based constructor
+//! \param u [IN,OUT] Moves URI in to palce and stands up nn_socket and nn_bind
 PubSub_Publisher::Implementation::Implementation(URI&& u)
   : uri(std::move(u))
   , socket(0)
@@ -84,6 +102,10 @@ PubSub_Publisher::Implementation::Implementation(URI&& u)
   }
 }
 //-----------------------------------------------------------------------------
+//!
+//! broadcast function for controlling Pub/Sub paradigm.
+//! Underlying Implementation is done in nanomsg
+//!
 void PubSub_Publisher::Implementation::publish()
 {
   do {
@@ -95,11 +117,14 @@ void PubSub_Publisher::Implementation::publish()
   } while (running);
 }
 //-----------------------------------------------------------------------------
+//!  URI based constructor. Takes a copy of a URI to setup networking information
+//! \param uri [IN]  Service configuration of the new PubSub_Publisher
 PubSub_Publisher::PubSub_Publisher(URI uri)
   : _impl(std::make_unique<Implementation>(std::move(uri)))
 {
 }
 //-----------------------------------------------------------------------------
+//!  Shuts down async threading and fress all memory
 PubSub_Publisher::~PubSub_Publisher()
 {
   nn_close(_impl->socket);
@@ -110,6 +135,10 @@ void PubSub_Publisher::set_response_callaback_func(CallbackFunc func)
 {
 }
 //-----------------------------------------------------------------------------
+//!
+//! \param func [IN] -- Function that will be called to generate broadcast message
+//!
+//! Blocking call for receiving a single message
 void PubSub_Publisher::broadcast(BroadcastFunc func)
 {
   _impl->generate_message_func = func;
@@ -117,6 +146,12 @@ void PubSub_Publisher::broadcast(BroadcastFunc func)
   _impl->publish();
 }
 //-----------------------------------------------------------------------------
+//! \param func [IN] --  Function that will be called to generate broadcast message
+//! Non Blocking listen request; Will continue to process inbound messages by calling the BroadcastFunc
+//! Until running is set to false.
+//! Future versions of async_broadcast may allow multiple parallel broadcast, but this is currently
+//! Undefined behavior.
+//!
 void PubSub_Publisher::async_broadcast(BroadcastFunc func)
 {
   _impl->generate_message_func = func;
@@ -124,10 +159,13 @@ void PubSub_Publisher::async_broadcast(BroadcastFunc func)
   _impl->pubsub_main_thread = std::thread(&Implementation::publish, _impl.get());
 }
 //-----------------------------------------------------------------------------
+//! Part of the Pattern interface stands up all IO not handled by the RIIA
 void PubSub_Publisher::standup()
 {
 }
 //-----------------------------------------------------------------------------
+//! Terminates all pending IO will invalidate future broadcast events and should onyl be called
+//! Before the Surveyor goes out of scope.
 void PubSub_Publisher::shutdown()
 {
   _impl->running = true;

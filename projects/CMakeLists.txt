@@ -30,7 +30,7 @@ else()
 endif()
 
 set(Boost_USE_STATIC_LIBS  OFF)
-find_package(Boost COMPONENTS system thread program_options signals log REQUIRED)
+find_package(Boost COMPONENTS system thread program_options log REQUIRED)
 
 ###############################################################################
 # Step 2: Project Includes are generally order dependent.  So manually maintain
@@ -46,3 +46,23 @@ add_subdirectory(unit_test)
 # Step 3: Global Doxygen configuration 
 #         you might need to tweak this if you have multiple doxy files
 ###############################################################################
+option(BUILD_DOC "Build documentation" ON)
+
+# check if Doxygen is installed
+find_package(Doxygen)
+
+set(DOXYGEN_GENERATE_LATEX YES)
+set(DOXYGEN_PROJECT_BRIEF "An oepn source reference implementation of the SUSTAIN Networking protocol")
+set(DOXYGEN_GENERATE_HTML YES)
+set(DOXYGEN_GENERATE_MAN YES)
+set(DOXYGEN_GENERATE_PDF YES)
+set(DOXYGEN_DISABLE_INDEX NO)
+set(DOXYGEN_GENERATE_TREEVIEW YES)
+set(DOXYGEN_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/doxygen)
+if (DOXYGEN_FOUND)
+  doxygen_add_docs(generate_doxygen
+    libpfc_net/cpp   libpfc_net/include
+    COMMENT generating networking specification)
+else (DOXYGEN_FOUND)
+  message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)

@@ -10,6 +10,8 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+/*! \file */
+
 #include <sustain/framework/net/patterns/req_rep/Server.h>
 
 #include <thread>
@@ -17,26 +19,34 @@ specific language governing permissions and limitations under the license.
 #include <nanomsg/reqrep.h>
 
 #include "../nanomsg_helper.h"
+#include "sustain/framework/net/patterns/survey/Surveyor.h"
+
 #include <sustain/framework/util/Error.h>
 namespace pfc {
+//!
+//! PIMPL Implementation for a ReqRep_Server
+//!
 struct ReqRep_Server::Implementation {
   Implementation(URI&&);
   ~Implementation();
 
-  URI uri;
-  int socket;
-  int rv;
-  char* msg_buffer;
-  bool running;
+  URI uri; //!<  URI of the service to be given to nano_msg
+  int socket; //!<  Socket the service runs
+  int rv; //!<  return value of any nano_msg calls
+  char* msg_buffer; //!<  msg_buffer nano_messages internal buffer
+  bool running; //!<  Run control for async threading
 
   void listen();
 
-  std::thread pubsub_main_thread;
-  ListenFunc message_process_function;
+  std::thread pubsub_main_thread; //!< Threading control for async read/writes
+  ListenFunc message_process_function; //!< Call back functions for managing
 
-  Error ec;
+  Error ec; //!< Current Error code of the system else Success()
 };
 //-------------------------------------------------------------------------------
+//!
+//! URI based constructor
+//! \param u [IN,OUT] Moves URI in to palce and stands up nn_socket and nn_bind
 ReqRep_Server::Implementation::Implementation(URI&& u)
   : uri(std::move(u))
   , socket(0)
@@ -51,7 +61,8 @@ ReqRep_Server::Implementation::Implementation(URI&& u)
     ec = nano_to_Error(rv);
   }
 }
-  //-------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
+//! Deconstructor for Implementation - Shutsdown all pending nn activity and clears memory
 ReqRep_Server::Implementation::~Implementation()
 {
   if (rv && socket) {
@@ -67,6 +78,10 @@ ReqRep_Server::Implementation::~Implementation()
   }
 }
 //-------------------------------------------------------------------------------
+//!
+//! Listen function for controlling Surver paradigm.
+//! Underlying Implementation is done in nanomsg
+//!
 void ReqRep_Server::Implementation::listen()
 {
   do {
@@ -84,11 +99,14 @@ void ReqRep_Server::Implementation::listen()
   } while (running);
 }
 //-------------------------------------------------------------------------------
+//!  URI based constructor. Takes a copy of a URI to setup networking information
+//! \param uri [IN]  Service configuration of the new Surveyor
 ReqRep_Server::ReqRep_Server(URI uri)
   : _impl(std::make_unique<Implementation>(std::move(uri)))
 {
 }
 //-------------------------------------------------------------------------------
+//!  Shuts down async threading and fress all memory
 ReqRep_Server::~ReqRep_Server()
 {
   if (_impl->socket) {
@@ -97,6 +115,10 @@ ReqRep_Server::~ReqRep_Server()
   _impl->socket = 0;
 }
 //-------------------------------------------------------------------------------
+//!
+//! \param func [IN] -- Function that will be called when a message is received by a client
+//!
+//! Blocking call for receiving a single message
 void ReqRep_Server::listen(ListenFunc func)
 {
   _impl->message_process_function = func;
@@ -104,6 +126,10 @@ void ReqRep_Server::listen(ListenFunc func)
   _impl->listen();
 }
 //-------------------------------------------------------------------------------
+//! \param func [IN] -- Function that will be called when a message is received
+//! Non Blocking listen request; Will continue to process inbound messages by calling the ListenFunc
+//! Until running is set to false.
+//! 
 void ReqRep_Server::async_listen(ListenFunc func)
 {
   _impl->message_process_function = func;
@@ -111,10 +137,14 @@ void ReqRep_Server::async_listen(ListenFunc func)
   _impl->pubsub_main_thread = std::thread(&Implementation::listen, _impl.get());
 }
 //-------------------------------------------------------------------------------
+//! Part of the Pattern interface stands up all IO not handled by the RIIA
+//
 void ReqRep_Server::standup()
 {
 }
 //-------------------------------------------------------------------------------
+//! Terminates all pending IO will invalidate future broadcast events and should onyl be called
+//! Before the Surveyor goes out of scope.
 void ReqRep_Server::shutdown()
 {
   _impl->running = false;

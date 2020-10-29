@@ -10,6 +10,8 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+/*! \file */
+
 #include <sustain/framework/net/Multicast_Receiver.h>
 
 #include <thread>
@@ -22,37 +24,76 @@ specific language governing permissions and limitations under the license.
 
 namespace pfc {
 
+//!
+//!   basic_streambuf wrapper of a vector class.
+//!   The vector can be moved in to teh vector_streambuf
+//!   To simplify life time issues or copied
+//!
 template <typename CharT, typename TraitsT = std::char_traits<CharT>>
 class vector_streambuf : public std::basic_streambuf<CharT, TraitsT> {
 public:
-  vector_streambuf(std::vector<CharT>& vec)
+  //!
+  //! Moves Vector to self
+  //!
+  vector_streambuf(std::vector<CharT>&& vec)
+    : self(std::move(vec))
   {
-    setg(vec.data(), vec.data(), vec.data() + vec.size());
+    setg(self.data(), self.data(), self.data() + self.size());
   }
+  //!
+  //! Copies Vector to self
+  //!
+  vector_streambuf(std::vector<CharT> vec)
+    : self(std::move(vec))
+  {
+    setg(self.data(), self.data(), self.data() + self.size());
+  }
+  //!
+  //! Internally stores the current &vec[0] and vec->size()
+  //! It is critical that the vector remain in scope while the vector_streambuf exist
+  //! And  any operation which would invlalidate an interator is unsafe for the lifetime of the vector_streambuf
+  //!
+  vector_streambuf(std::vector<CharT>* vec)
+    : self()
+  {
+    setg(vec->data(), vec->data(), vec->data() + vec->size());
+  }
+
+private:
+  std::vector<CharT> self; //!< Internal vector storage for move and copy constructors
 };
 
+/**
+ *  PIMPL Implementation of the Multicast_Receiver
+ */
 struct Multicast_Receiver::Implementation {
   Implementation();
   ~Implementation();
   Error multicast_setup(const std::string& bind_address, const std::string& multicast_addres, uint16_t ports);
   void multicast_receive();
 
-  boost::asio::io_context io_context;
-  boost::asio::ip::udp::socket socket;
-  boost::asio::ip::udp::endpoint endpoint;
-  std::vector<char> buffer;
+  boost::asio::io_context io_context; //!< boost::asio IO_CONTEXT
+  boost::asio::ip::udp::socket socket; //!< boost::socket for udp broadcast
+  boost::asio::ip::udp::endpoint endpoint; //!< boost broadcast endpoint
+  std::vector<char> buffer; //!< Internal buffer for receiving messages
 
-  std::thread multicast_async_receive_thread;
-  std::function<void(std::istream&)> process_message_function;
+  std::thread multicast_async_receive_thread; //!< Thread used for async receceives
+  std::function<void(std::istream&)> process_message_function; //!<Callback function for processing messages once received. Will be passed in by derived classes
 
-  Error system_status;
+  Error system_status; //!< Current System Status
 };
 //-----------------------------------------------------------------------------
+//!
+//! Default constructor for an Implementation
+//!
 Multicast_Receiver::Implementation::Implementation()
   : socket(io_context)
 {
 }
 //-----------------------------------------------------------------------------
+//!
+//! Stops current threading activity and destroys the implementation
+//!
 Multicast_Receiver::Implementation::~Implementation()
 {
   if (!io_context.stopped()) {
@@ -63,6 +104,13 @@ Multicast_Receiver::Implementation::~Implementation()
   }
 }
 //-----------------------------------------------------------------------------
+//!
+//! Setup function for multicast configuration
+//! \param bind_address [IN] - Interface Bind Address for the multicast device
+//! \param multicast_address [IN] - UDP Braodcast channel to subscribe to
+//! \param port [IN] - Port for the broadcast channel to listen on
+//!
+//! \return Error - PFC_IP_PARSE_ERROR if paramaters are not ithe proper format else NO_ERROR
 Error Multicast_Receiver::Implementation::multicast_setup(const std::string& bind_address, const std::string& multicast_address, uint16_t port)
 {
   boost::system::error_code ec;
@@ -87,32 +135,45 @@ Error Multicast_Receiver::Implementation::multicast_setup(const std::string& bin
   return system_status;
 }
 //-----------------------------------------------------------------------------
+//!
+//! Blocking call to  listen on multicast channel
+//!
 void Multicast_Receiver::Implementation::multicast_receive()
 {
-  buffer.resize(1024);
+  if (buffer.size() < 1024) {
+    buffer.resize(1024);
+  }
   socket.async_receive_from(
     boost::asio::buffer(buffer), endpoint,
     [this](boost::system::error_code ec, std::size_t length) {
       if (!ec) {
-        vector_streambuf<char> in_buffer{ buffer };
-        std::istream stream{ &in_buffer };
+        vector_streambuf<char> in_buffer { &buffer };
+        std::istream stream { &in_buffer };
         process_message_function(stream);
         multicast_receive();
       }
     });
 }
 //-----------------------------------------------------------------------------
+//!
+//! \param bind_address [IN] - Interface Bind Address for the multicast device
+//! \param multicast_address [IN] - UDP Braodcast channel to subscribe to
+//! \param port [IN] - Port for the broadcast channel to listen on
+//!
 Multicast_Receiver::Multicast_Receiver(std::string bind_address, std::string multicast_address, uint16_t port)
   : _impl(std::make_unique<Implementation>())
 {
   _impl->multicast_setup(bind_address, multicast_address, port);
 }
 //-----------------------------------------------------------------------------
+//! Copy constructof ro Multicast_Receiver
+//! \param obj [IN,OUT] - Object to be moved in to this
 Multicast_Receiver::Multicast_Receiver(Multicast_Receiver&& obj)
   : _impl(std::move(obj._impl))
 {
 }
 //-----------------------------------------------------------------------------
+//! Deconstructor of Multicast_Receiver will terminate all pending IO
 Multicast_Receiver::~Multicast_Receiver()
 {
   stop();
@@ -155,20 +216,25 @@ void Multicast_Receiver::stop()
   }
 }
 //-----------------------------------------------------------------------------
+//! \return size_t -- Lengh of the current underlying buffer
 size_t Multicast_Receiver::buffer_legth() const { return _impl->buffer.size(); }
 //-----------------------------------------------------------------------------
+//! \return size_t [IN] -- Resizes the background buffer. Implementation will inflate to a minimum of 1024 bytes but will respect larger sizes.
 void Multicast_Receiver::buffer_legth(const size_t length) { return _impl->buffer.resize(length); }
 //-----------------------------------------------------------------------------
+//! \return bool -- True if System_Status is Success();
 bool Multicast_Receiver::is_valid()
 {
   return _impl->system_status == Success();
 }
 //-----------------------------------------------------------------------------
+//! \return Error -- Returns Success() or the last ErrorCode set
 Error Multicast_Receiver::error()
 {
   return _impl->system_status;
 }
 //-----------------------------------------------------------------------------
+//! \return bool -- Move operator for a Multicast_Receiver
 Multicast_Receiver& Multicast_Receiver::operator=(Multicast_Receiver&& obj)
 {
   _impl = std::move(obj._impl);

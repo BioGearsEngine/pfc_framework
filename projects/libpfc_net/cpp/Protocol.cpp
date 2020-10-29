@@ -10,6 +10,8 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+/*! \file */ 
+
 
 #include "sustain/framework/Protocol.h"
 
@@ -18,12 +20,14 @@ specific language governing permissions and limitations under the license.
 
 namespace pfc {
 
+//! Ostream operator for pfc_protocol
 std::ostream& operator<<(std::ostream& os, const pfc_protocol& rhs)
 {
   os << ((rhs == pub_sub) ? "pub_sub" : "req_rep");
   return os;
 }
 //-----------------------------------------------------------------------------
+// Deconstructor 
 pfc_service_announcment::~pfc_service_announcment()
 {
   _name.resize(0);
@@ -31,6 +35,7 @@ pfc_service_announcment::~pfc_service_announcment()
   _brief.resize(0);
 };
 //-----------------------------------------------------------------------------
+// \return size_t length of message once serialized
 size_t pfc_service_announcment::Length() const
 {
   size_t length = size_of_pfc_type<
@@ -38,11 +43,15 @@ size_t pfc_service_announcment::Length() const
   return length;
 }
 //-----------------------------------------------------------------------------
+// \return pfc_uint -- Message Type
 pfc_uint pfc_service_announcment::Type() const
 {
   return _message_type;
 }
 //-----------------------------------------------------------------------------
+//! Serializes a given pfc_service_announcment to an ostream
+// \param os [IN,OUT] -- Outbound stream to contains a message
+// \return Error -- Success() unless an Error occured during deserialization
 Error pfc_service_announcment::serialize(std::ostream& os) const
 {
 
@@ -50,11 +59,16 @@ Error pfc_service_announcment::serialize(std::ostream& os) const
     decltype(_message_type), decltype(_port), decltype(_protacol), decltype(_name), decltype(_address), decltype(_brief)>(os, _message_type, _port, _protacol, _name, _address, _brief);
 }
 //-----------------------------------------------------------------------------
+//! Deserializes a given pfc_service_announcment from an istream
+// \param is [IN,OUT] -- Input stream that contains a message
+// \return Error -- Success() unless an Error occured during deserialization
 Error pfc_service_announcment::deserialize(std::istream& is)
 {
   return deserialize_pfc_type<
     decltype(_message_type), decltype(_port), decltype(_protacol), decltype(_name), decltype(_address), decltype(_brief)>(is, _message_type, _port, _protacol, _name, _address, _brief);
 }
+
+//! ostream oeprator for pfc_service_announcment messages
 std::ostream& operator<<(std::ostream& os, const pfc_service_announcment& msg)
 {
   os << "pfc_service_announcment("

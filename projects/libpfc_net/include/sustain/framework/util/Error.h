@@ -13,6 +13,7 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+  /*! \file */
 
 #include <cstdint>
 #include <ostream>
@@ -21,8 +22,18 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/util/Constants.h>
 namespace pfc {
 
+//!
+//! Global PFC Error class
+//! Operats as a Bit Array of possible errors
+//! Users can compare Errors using | and & operators
 class SUSTAIN_FRAMEWORK_API Error {
 public:
+
+  //!
+  //! Valid PFC Error codes 
+  //! \brief all error codes are a power of two for a maximum of 63 Error codes
+  //!        Error codes can be combined together when multiple errors occur and checked
+  //!        using the &= and && operators to see if a specific error occured.
   enum Code : uint64_t {
     //! Error Codes
     PFC_NONE = 0 << 0,
@@ -45,11 +56,11 @@ public:
   Error();
   Error(uint64_t);
   Error(Code);
-  Error(const Error&) = default;
-  Error(Error&&) = default;
+  Error(const Error&) = default;                    //!< Default Copy Constructor
+  Error(Error&&) = default;                         //!< Default Move Constructor
 
-  Error& operator=(const Error&) = default;
-  Error& operator=(Error&&) = default;
+  Error& operator=(const Error&) = default;         //!< Default Assignment Operator
+  Error& operator=(Error&&) = default;              //!< Default Move Operator
   Error& operator=(const Code&);
 
   bool operator==(const Error&) const;
@@ -64,9 +75,9 @@ public:
   Error operator|(const Code&) const;
   Error operator&(const Code&)const;
 
-  operator bool() const { return _value != Code::PFC_NONE; }
-  inline bool is_ok() const { return _value == Code::PFC_NONE; }
-  inline bool is_not_ok() const { return _value != Code::PFC_NONE; }
+  operator bool() const { return _value != Code::PFC_NONE; }          //!<  Boolean Operator returns true when is_not_ok() is true
+  inline bool is_ok() const { return _value == Code::PFC_NONE; }      //!< Shortcut comparison for is Error a Success()
+  inline bool is_not_ok() const { return _value != Code::PFC_NONE; }  //!< Shortcut comparison for is Error not equal to Success()
 
   void clear();
 
@@ -84,7 +95,7 @@ private:
 inline Error Success() { return { Error::Code::PFC_NONE }; }
 
 SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const Error&);
-SUSTAIN_FRAMEWORK_API Error& operator|(const Error::Code&, const Error::Code&);
+SUSTAIN_FRAMEWORK_API Error operator|(const Error::Code&, const Error::Code&);
 };
 
 #endif //SUSTAIN_PFCNW_ERROR_H

@@ -1,6 +1,8 @@
 #ifndef SUSTAIN_FRAMEWORK_NET_PATTERNS_REQREP_SERVER_H
 #define SUSTAIN_FRAMEWORK_NET_PATTERNS_REQREP_SERVER_H
 
+/*! \file */
+
 /**************************************************************************************
 copyright 2019 applied research associates, inc.
 licensed under the apache license, version 2.0 (the "license"); you may not use
@@ -23,6 +25,14 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/net/Uri.h>
 
 namespace pfc {
+//!
+//! This class creates a Server to a Req/Rep style service
+//! <a href="https://nanomsg.org/gettingstarted/nng/reqrep.htmll"> Documentation </a>
+//!
+//! Servers are traditional TCP/IP http response based implementations. 
+//! They can receive multiple messages from multiple clients and will dispatch appropriate
+//! responses in the order they are processed. Timeouts can occur if the server is to busy
+
 class SUSTAIN_FRAMEWORK_API ReqRep_Server : public Listiner {
 public:
 

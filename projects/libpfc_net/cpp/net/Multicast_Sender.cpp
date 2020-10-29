@@ -10,6 +10,8 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+/*! \file */
+
 #include <sustain/framework/net/Multicast_Sender.h>
 
 #include <thread>
@@ -24,7 +26,8 @@ specific language governing permissions and limitations under the license.
 #include <boost/asio/streambuf.hpp>
 
 namespace pfc {
-
+//!
+//!  PIMPL Implementation of a Multicast Sender
 struct Multicast_Sender::Implementation {
 
   Implementation();
@@ -38,18 +41,19 @@ struct Multicast_Sender::Implementation {
   void multicast_broadcast();
   void multicast_timeout();
 
-  boost::asio::io_context io_context;
-  boost::asio::ip::udp::endpoint endpoint;
-  boost::asio::ip::udp::socket socket;
-  boost::asio::steady_timer timer;
-  boost::asio::streambuf buffer;
+  boost::asio::io_context io_context;        //!< Boost io_context used in this Multicast_Sender
+  boost::asio::ip::udp::endpoint endpoint;   //!< Multicast broadcast channel
+  boost::asio::ip::udp::socket socket;       //!< Socket used to send messages
+  boost::asio::steady_timer timer;           //!< timeout clock
+  boost::asio::streambuf buffer;             //!< Message buffer that broadcast will be stored in
 
-  std::thread multicast_async_broadcast_thread;
-  std::function<void(std::ostream&)> process_message_function;
+  std::thread multicast_async_broadcast_thread; //!< Thread control for async braodcast request. 
+  std::function<void(std::ostream&)> process_message_function;    //!<  Callback for processing received broadcast
 
-  Error system_status;
+  Error system_status; //!< Current Error code of the system else Success()
 };
 //-----------------------------------------------------------------------------
+//! Constructs an Implementation of a Multicast_Sender
 Multicast_Sender::Implementation::Implementation()
   : io_context()
   , endpoint()
@@ -58,6 +62,7 @@ Multicast_Sender::Implementation::Implementation()
 {
 }
 //-----------------------------------------------------------------------------
+//! Deconstructs a Multicast_Sender and shuts down pending IO
 Multicast_Sender::Implementation::~Implementation()
 {
   if (!io_context.stopped()) {
@@ -68,12 +73,15 @@ Multicast_Sender::Implementation::~Implementation()
   }
 }
 //-----------------------------------------------------------------------------
-Error Multicast_Sender::Implementation::multicast_setup(const std::string& multicast_addres, uint16_t ports)
+//! \param multicast_address [IN] broadcast channel to be used for multicast
+//! \param port [IN] port on the address ot be used
+//! \return Error - Success() unless an PFC_IP_PARSE_ERROR occurs 
+Error Multicast_Sender::Implementation::multicast_setup(const std::string& multicast_address, uint16_t port)
 {
   boost::system::error_code ec;
-  const auto multicast_address = boost::asio::ip::make_address(multicast_addres, ec);
+  const auto multicast_address = boost::asio::ip::make_address(multicast_address, ec);
   if (!ec) {
-    endpoint = boost::asio::ip::udp::endpoint(multicast_address, ports);
+    endpoint = boost::asio::ip::udp::endpoint(multicast_address, port);
     socket = boost::asio::ip::udp::socket(io_context, endpoint.protocol());
   } else {
     system_status = Error::Code::PFC_IP_PARSE_ERROR;
@@ -81,6 +89,7 @@ Error Multicast_Sender::Implementation::multicast_setup(const std::string& multi
   return system_status;
 }
 //-----------------------------------------------------------------------------
+//! Broadcast a single multicast message using blocking IO
 void Multicast_Sender::Implementation::multicast_broadcast()
 {
   std::ostream os(&buffer);
@@ -95,6 +104,7 @@ void Multicast_Sender::Implementation::multicast_broadcast()
     });
 }
 //-----------------------------------------------------------------------------
+//! Handles multicast timeouts by reseting broadcast message after a short delay
 void Multicast_Sender::Implementation::multicast_timeout()
 {
   timer.expires_after(std::chrono::seconds(1));
@@ -106,16 +116,21 @@ void Multicast_Sender::Implementation::multicast_timeout()
 }
 //-----------------------------------------------------------------------------
 Multicast_Sender::Multicast_Sender(std::string multicast_address, uint16_t port)
+//! \param multicast_address [IN] broadcast channel to be used for multicast
+//! \param port [IN] port on the address ot be used
   : _impl(std::make_unique<Implementation>())
 {
   _impl->multicast_setup(multicast_address, port);
 }
 //-----------------------------------------------------------------------------
+//! Default copy constructor for Multicast_sender
+//! \param obj [IN,OUT] obj to be moved in this address
 Multicast_Sender::Multicast_Sender(Multicast_Sender&& obj)
   : _impl(std::move(obj._impl))
 {
 }
 //-----------------------------------------------------------------------------
+//! Deconstructs Multicast_Sender and stops all async IO
 Multicast_Sender::~Multicast_Sender()
 {
   stop();
@@ -123,6 +138,9 @@ Multicast_Sender::~Multicast_Sender()
   _impl = nullptr;
 }
 //-----------------------------------------------------------------------------
+//! \param process_message_function [IN] std::function<void( const std::ostream& )> - Function to be excuted everytime a message is received.
+//!
+//! Blocking call to send a single multicast message
 void Multicast_Sender::send(std::function<void(std::ostream&)> process_message_function)
 {
   _impl->process_message_function = process_message_function;
@@ -130,6 +148,9 @@ void Multicast_Sender::send(std::function<void(std::ostream&)> process_message_f
   _impl->io_context.run_one();
 }
 //-----------------------------------------------------------------------------
+//! \param process_message_function [IN] std::function<void( const std::ostream& )> - Function to be excuted everytime a message is received.
+//!
+//! Sends a Message asyncronisly  stopping once io_context closes
 void Multicast_Sender::async_send(std::function<void(std::ostream&)> process_message_function)
 {
   _impl->process_message_function = process_message_function;
@@ -137,6 +158,7 @@ void Multicast_Sender::async_send(std::function<void(std::ostream&)> process_mes
   _impl->multicast_async_broadcast_thread = std::thread([this]() { _impl->io_context.run(); });
 }
 //-----------------------------------------------------------------------------
+//! Blocking call  until all async IO has been stopped. 
 void Multicast_Sender::join()
 {
   if (_impl->multicast_async_broadcast_thread.joinable()) {
@@ -144,6 +166,7 @@ void Multicast_Sender::join()
   }
 }
 //-----------------------------------------------------------------------------
+//! Stops current async IO
 void Multicast_Sender::stop()
 {
   if (!_impl->io_context.stopped()) {
@@ -151,16 +174,21 @@ void Multicast_Sender::stop()
   }
 }
 //-----------------------------------------------------------------------------
+//! \return bool -- true if error() == Success()
 bool Multicast_Sender::is_valid()
 {
   return _impl->system_status == Success();
 }
 //-----------------------------------------------------------------------------
+//! \return Error -- Success() unless a processing error has occured
 Error Multicast_Sender::error() const
 {
   return _impl->system_status;
 }
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+//! Move operator for Multicast_Sender
+//! \param rhs [IN,OUT] -- RHS to be moved in to this
+//! \return Multicast_Sender& -- Reference to this
 Multicast_Sender& Multicast_Sender::operator=(Multicast_Sender&& rhs)
 {
   _impl = std::move(rhs._impl);

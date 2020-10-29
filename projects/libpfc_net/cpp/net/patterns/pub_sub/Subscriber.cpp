@@ -10,6 +10,8 @@ conditions of any kind, either express or implied. see the license for the
 specific language governing permissions and limitations under the license.
 **************************************************************************************/
 
+/*! \file */
+
 #include <sustain/framework/net/patterns/pub_sub/Subscriber.h>
 
 #include <thread>
@@ -20,24 +22,27 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/util/Error.h>
 
 namespace pfc {
+//!
+//! PIMPL Implementation of a PubSub_Subscriber
 struct PubSub_Subscriber::Implementation {
   Implementation(URI&&);
   ~Implementation();
 
-  URI uri;
-  int socket;
-  int rv;
-  char* msg_buffer;
-  bool running;
+  URI uri; //!< Boost io_context used in this Multicast_Sender
+  int socket; //!< Multicast broadcast channel
+  int rv; //!< Socket used to send messages
+  char* msg_buffer; //!< timeout clock
+  bool running; //!< Message buffer that broadcast will be stored in
 
   void listen();
 
-  std::thread pubsub_main_thread;
-  ListenFunc message_process_function;
+  std::thread pubsub_main_thread; //!< Thread control for async braodcast request. 
+  ListenFunc message_process_function; //!<  Callback for processing received broadcast
 
-  Error ec;
+  Error ec; //!< Current Error code of the system else Success()
 };
 //-------------------------------------------------------------------------------
+//! Constructs an Implementation of a PubSub_Subscriber
 PubSub_Subscriber::Implementation::~Implementation()
 {
   if (rv && socket) {
@@ -53,6 +58,8 @@ PubSub_Subscriber::Implementation::~Implementation()
   }
 }
 //-------------------------------------------------------------------------------
+//!  URI based constructor. Takes a copy of a URI to setup networking information
+//! \param u [IN]  Service configuration of the new Surveyor
 PubSub_Subscriber::Implementation::Implementation(URI&& u)
   : uri(std::move(u))
   , socket(0)
@@ -71,6 +78,10 @@ PubSub_Subscriber::Implementation::Implementation(URI&& u)
   }
 }
 //-------------------------------------------------------------------------------
+//!
+//! Listen function for controlling PubSub paradigm.
+//! Underlying Implementation is done in nanomsg
+//!
 void PubSub_Subscriber::Implementation::listen()
 {
   do {
@@ -84,11 +95,14 @@ void PubSub_Subscriber::Implementation::listen()
   } while (running);
 }
 //-------------------------------------------------------------------------------
+//!  URI based constructor. Takes a copy of a URI to setup networking information
+//! \param uri [IN]  Service configuration of the new PubSub_Subscriber
 PubSub_Subscriber::PubSub_Subscriber(URI uri)
   : _impl(std::make_unique<Implementation>(std::move(uri)))
 {
 }
 //-------------------------------------------------------------------------------
+//!  Shuts down async threading and fress all memory
 PubSub_Subscriber::~PubSub_Subscriber()
 {
   if (_impl->socket) {
@@ -97,6 +111,10 @@ PubSub_Subscriber::~PubSub_Subscriber()
   _impl->socket = 0;
 }
 //-------------------------------------------------------------------------------
+//!
+//! \param func [IN] -- Function that will be called when a message is received by a client
+//!
+//! Blocking call for receiving a single message
 void PubSub_Subscriber::listen(ListenFunc func)
 {
   _impl->message_process_function = func;
@@ -104,6 +122,12 @@ void PubSub_Subscriber::listen(ListenFunc func)
   _impl->listen();
 }
 //-------------------------------------------------------------------------------
+//! \param func [IN] -- Function that will be called when a message is received
+//! Non Blocking listen request; Will continue to process inbound messages by calling the ListenFunc
+//! Until running is set to false.
+//! Future versions of async_broadcast may allow multiple parallel broadcast, but this is currently
+//! Undefined behavior.
+//!
 void PubSub_Subscriber::async_listen(ListenFunc func)
 {
   _impl->message_process_function = func;
@@ -111,10 +135,14 @@ void PubSub_Subscriber::async_listen(ListenFunc func)
   _impl->pubsub_main_thread = std::thread(&Implementation::listen, _impl.get());
 }
 //-------------------------------------------------------------------------------
+//! Part of the Pattern interface stands up all IO not handled by the RIIA
+//
 void PubSub_Subscriber::standup()
 {
 }
 //-------------------------------------------------------------------------------
+//! Terminates all pending IO will invalidate future broadcast events and should onyl be called
+//! Before the Surveyor goes out of scope.
 void PubSub_Subscriber::shutdown()
 {
   _impl->running = false;

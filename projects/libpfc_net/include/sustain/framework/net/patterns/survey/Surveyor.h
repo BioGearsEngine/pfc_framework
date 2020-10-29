@@ -1,6 +1,8 @@
 #ifndef SUSTAIN_FRAMEWORK_NET_PATTERNS_SURVEY_SURVEYOR_H
 #define SUSTAIN_FRAMEWORK_NET_PATTERNS_SURVEY_SURVEYOR_H
 
+/*! \file */
+
 /**************************************************************************************
 copyright 2019 applied research associates, inc.
 licensed under the apache license, version 2.0 (the "license"); you may not use
@@ -18,6 +20,13 @@ specific language governing permissions and limitations under the license.
 
 #include <sustain/framework/net/Uri.h>
 namespace pfc {
+//!
+//! This class creates a Surveyor to a Survey style service
+//! <a href="https://nanomsg.org/gettingstarted/nng/survey.html"> Documentation </a>
+//!
+//! Surveyors broadcast questions to all particpants and gather the responses before continuing
+
+
 class SUSTAIN_FRAMEWORK_API Survey_Surveyor : public Broadcaster {
 
   Survey_Surveyor(URI);
