@@ -46,10 +46,12 @@ add_subdirectory(unit_test)
 # Step 3: Global Doxygen configuration 
 #         you might need to tweak this if you have multiple doxy files
 ###############################################################################
-option(BUILD_DOC "Build documentation" ON)
-
+option(BUILD_DOC "Build documentation" OFF)
+if (BUILD_DOC)
 # check if Doxygen is installed
 find_package(Doxygen)
+find_package(LATEX)
+
 
 set(DOXYGEN_GENERATE_LATEX YES)
 set(DOXYGEN_PROJECT_BRIEF "An oepn source reference implementation of the SUSTAIN Networking protocol")
@@ -66,3 +68,4 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
+endif(BUILD_DOC)

@@ -35,13 +35,13 @@ struct Service::Implementation {
   void announce_service_creation(std::ostream&);
   void handle_service_broadcaster_message(std::istream&);
 
-  std::function<void(pfc_service_announcment&)> service_broadcast_callback;    //!<Callback function that is called each time a new service is announced
+  std::function<void(pfc_service_announcement&)> service_broadcast_callback;    //!<Callback function that is called each time a new service is announced
 
-  pfc_service_announcment service_config;            //!<Struct containing details that will be broadcasted over mulicast so other services and clients can subscribe
+  pfc_service_announcement service_config;            //!<Struct containing details that will be broadcasted over mulicast so other services and clients can subscribe
   Config::protocol style;                            //!<Configuration Style of the service implmentation
 
-  Multicast_Sender multicast_announcment;            //!<periodically announces itself to the network
-  Multicast_Receiver multicast_broadcast_listiner;   //!< Responds to the announcment of new services
+  Multicast_Sender multicast_announcement;            //!<periodically announces itself to the network
+  Multicast_Receiver multicast_broadcast_listiner;   //!< Responds to the announcement of new services
   pfc::Error server_status; //!< Current Error code of the system else Success()
 };
 
@@ -49,7 +49,7 @@ struct Service::Implementation {
 //!  \param bind_address [IN] std::string -- The IP4/IP6 address the implmentation will bind to for multicast purposes
 //!  \param multicast_address [IN] std::string -- The IP4/IP6 address the implmentation will broadcast. Port number is assumed by the specification
 Service::Implementation::Implementation(const std::string& bind_address, const std::string& multicast_address)
-  : multicast_announcment(multicast_address, g_pfc_registry_reg_port)
+  : multicast_announcement(multicast_address, g_pfc_registry_reg_port)
   , multicast_broadcast_listiner(bind_address, multicast_address, g_pfc_registry_announce_port)
 {
 }
@@ -58,10 +58,10 @@ Service::Implementation::Implementation(const std::string& bind_address, const s
 //!  Derived class is responsible for shutting down the  true service activty
 Service::Implementation::~Implementation()
 {
-  multicast_announcment.stop();
+  multicast_announcement.stop();
   multicast_broadcast_listiner.stop();
 
-  multicast_announcment.join();
+  multicast_announcement.join();
   multicast_broadcast_listiner.join();
 }
 //-----------------------------------------------------------------------------
@@ -87,11 +87,11 @@ void Service::Implementation::announce_service_creation(std::ostream& os)
 //!
 void Service::Implementation::handle_service_broadcaster_message(std::istream& is)
 {
-  pfc_service_announcment announcment;
-  if (announcment.deserialize(is).is_ok()) {
-    std::cout << "Registry Sent:" << announcment << "\n";
+  pfc_service_announcement announcement;
+  if (announcement.deserialize(is).is_ok()) {
+    std::cout << "Registry Sent:" << announcement << "\n";
     if(service_broadcast_callback)
-    { service_broadcast_callback(announcment); }
+    { service_broadcast_callback(announcement); }
   }
 }
 //-----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void Service::Implementation::handle_service_broadcaster_message(std::istream& i
 Service::Service(const Config config, const std::string& multicast_bind_address, const std::string& registry_multicast_address)
   : _impl(std::make_unique<Implementation>(std::move(multicast_bind_address), std::move(registry_multicast_address)))
 {
-  pfc_service_announcment service;
+  pfc_service_announcement service;
   service._name = config.name;
   service._protacol = (config.style == Config::pub_sub) ? pfc_protocol::pub_sub : pfc_protocol::req_req;
   service._address = config.address.c_str();
@@ -133,27 +133,27 @@ void Service::start()
 {
   using namespace std::placeholders;
   auto& impl = *_impl;
-  _impl->multicast_announcment.async_send(std::bind(&Implementation::announce_service_creation, _impl.get(), _1));
+  _impl->multicast_announcement.async_send(std::bind(&Implementation::announce_service_creation, _impl.get(), _1));
   _impl->multicast_broadcast_listiner.async_receive(std::bind(&Implementation::handle_service_broadcaster_message, _impl.get(), _1));
 }
 //-----------------------------------------------------------------------------
 //!  Runnable interface stops all multiservice activity and asyncronous threading.
 void Service::stop()
 {
-  _impl->multicast_announcment.stop();
+  _impl->multicast_announcement.stop();
   _impl->multicast_broadcast_listiner.stop();
 }
 //-----------------------------------------------------------------------------
-//!  Blocking call that will not return until multicast_announcment and multicast_braodcast_listner have  been 
+//!  Blocking call that will not return until multicast_announcement and multicast_braodcast_listner have  been 
 void Service::join()
 {
-  _impl->multicast_announcment.join();
+  _impl->multicast_announcement.join();
   _impl->multicast_broadcast_listiner.join();
 }
 //-----------------------------------------------------------------------------
 //! Sets the callback function that qill be executed once per each service broadcast. void(void)
 //! \param func [IN] stores a std::function to be executed as a callback
-void Service::set_service_announcment_callback(std::function<void(pfc_service_announcment&)> func)
+void Service::set_service_announcement_callback(std::function<void(pfc_service_announcement&)> func)
 {
   _impl->service_broadcast_callback = func;
 }

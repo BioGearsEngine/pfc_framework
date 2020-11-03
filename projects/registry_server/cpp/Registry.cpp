@@ -39,7 +39,7 @@ struct Registry::Implementation {
   std::mutex broadcast_mutex;
   std::condition_variable broadcast_condition;
 
-  std::unordered_map<std::string, pfc_service_announcment> services;
+  std::unordered_map<std::string, pfc_service_announcement> services;
   std::queue<std::string> pending_broadcast;
 };
 //-----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ Registry::Implementation::~Implementation()
 //-----------------------------------------------------------------------------
 void Registry::Implementation::process_subscription_message(std::istream& is)
 {
-  pfc_service_announcment message;
+  pfc_service_announcement message;
   if (message.deserialize(is).is_ok()) {
     auto key = message._address + ":" + std::to_string(message._port);
     std::cout << "Received: " << message << "\n";
@@ -77,7 +77,7 @@ void Registry::Implementation::broadcast_service_subscription(std::ostream& os)
 {
 
   if (!pending_broadcast.empty()) {
-    pfc_service_announcment service = services[pending_broadcast.front()];
+    pfc_service_announcement service = services[pending_broadcast.front()];
     pending_broadcast.pop();
 
     if (service.serialize(os).is_not_ok()) {

@@ -32,7 +32,7 @@ specific language governing permissions and limitations under the license.
 #include <sustain/framework/net/Uri.h>
 
 namespace pfc {
-struct pfc_service_announcment; 
+struct pfc_service_announcement; 
 
 //!
 //!  Base class for PFC Services.
@@ -69,7 +69,7 @@ public:
   Service(Service&&);
   ~Service();
 
-  void set_service_announcment_callback(std::function<void(pfc_service_announcment&)>);
+  void set_service_announcement_callback(std::function<void(pfc_service_announcement&)>);
 
   auto name() const -> std::string;
   auto address() const -> std::string;

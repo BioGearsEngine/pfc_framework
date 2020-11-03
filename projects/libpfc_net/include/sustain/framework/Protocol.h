@@ -98,38 +98,176 @@ constexpr pfc_uint MESSAGE_TYPE_NOT_ASSIGNED = 0x00000000;       //!<  Default v
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
-//ICD 6.1 Get Current Location
+// Service Registry Message
 //-----------------------------------------------------------------------
-constexpr pfc_uint SERVICE_REGISTRY_REQUEST = 0x00000001;             //!<  value returned by type() from a pfc_service_announcment
-constexpr pfc_uint SERVICE_REGISTRY_RESPONSE = 0x10000001;            //!<  value returned by type() from a pfc_service_announcment_response
+//
 
-struct SUSTAIN_FRAMEWORK_API pfc_service_announcment : pfc_message {
-  pfc_uint _message_type = SERVICE_REGISTRY_REQUEST;    //!< value returned by TYPE. Shoudld be constant for any specific message type unless a deseralization error has occured.
+//-------------------------------------Service Announcement    --------------------------------------------------------------------------
+constexpr pfc_uint SERVICE_Announcement_REQUEST = 0x00000001; //!<  value returned by type() from a pfc_service_announcement
+constexpr pfc_uint SERVICE_Announcement_RESPONSE = 0x10000001; //!<  value returned by type() from a pfc_service_announcement_response
+
+struct SUSTAIN_FRAMEWORK_API pfc_service_announcement : pfc_message {
+  pfc_uint _message_type = SERVICE_Announcement_REQUEST; //!< value returned by TYPE. Shoudld be constant for any specific message type unless a deseralization error has occured.
   pfc_ushort _port;                                     //!< Stores a listinging port of the registered remote service
   pfc_protocol _protacol = pfc_protocol::pub_sub;       //!< Stores teh protacol used byt the registered service
   pfc_string _name;                                     //!< Human Readable Name of the Service                                                        
   pfc_string _address;                                  //!< Valid URI for communicating with the service. Depending on the protcol implementation may be an IP4/IP6 or System Socket
   pfc_string _brief;                                    //!< Human Description of the service and its feature set. 
 
-  ~pfc_service_announcment() override;
+  ~pfc_service_announcement() override;
 
   size_t Length() const override;                   //!< Returns the length of the encoded message
   pfc_uint Type() const override;                   //!< Returns teh _message_type of an encoded message
-  Error serialize(std::ostream& os) const override; //!< Sends teh seralized format of a pfc_service_announcment over the provided  ostream. 
-  Error deserialize(std::istream& is) override;     //!< Marshalls a seralized service announcment and inflates it the data binding.
+  Error serialize(std::ostream& os) const override; //!< Sends teh seralized format of a pfc_service_announcement over the provided  ostream. 
+  Error deserialize(std::istream& is) override;     //!< Marshalls a seralized service announcement and inflates it the data binding.
 };
-
-//!< Stream Operator for converting a pfc_service_announcment over an ostream
-SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_service_announcment&);
+//!< Stream Operator for converting a pfc_service_announcement over an ostream
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_service_announcement&);
 //-----------------------------------------------------------------------
 // Comparison Operators
 //-----------------------------------------------------------------------
-
-
-//! Equivalance Operator for pfc_service_announcments
-bool SUSTAIN_FRAMEWORK_API operator==(const pfc_service_announcment&, const pfc_service_announcment&);
+//! Equivalance Operator for pfc_service_announcements
+bool SUSTAIN_FRAMEWORK_API operator==(const pfc_service_announcement&, const pfc_service_announcement&);
 //! Implemented as ! operator==()
-bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_service_announcment&, const pfc_service_announcment&);
+bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_service_announcement&, const pfc_service_announcement&);
+
+//-------------------------------------Service signoff--------------------------------------------------------------------------
+constexpr pfc_uint SERVICE_signoff_REQUEST = 0x00000002; //!<  value returned by type() from a pfc_service_signoff
+constexpr pfc_uint SERVICE_signoff_RESPONSE = 0x10000002; //!<  value returned by type() from a pfc_service_signoff_response
+
+struct SUSTAIN_FRAMEWORK_API pfc_service_signoff : pfc_message {
+  pfc_uint _message_type = SERVICE_signoff_REQUEST; //!< value returned by TYPE. Shoudld be constant for any specific message type unless a deseralization error has occured.
+  pfc_ushort _port; //!< Stores a listinging port of the registered remote service
+  pfc_protocol _protacol = pfc_protocol::pub_sub; //!< Stores teh protacol used byt the registered service
+  pfc_string _name; //!< Human Readable Name of the Service
+  pfc_string _address; //!< Valid URI for communicating with the service. Depending on the protcol implementation may be an IP4/IP6 or System Socket
+  pfc_string _brief; //!< Human Description of the service and its feature set.
+
+  ~pfc_service_signoff() override;
+
+  size_t Length() const override; //!< Returns the length of the encoded message
+  pfc_uint Type() const override; //!< Returns teh _message_type of an encoded message
+  Error serialize(std::ostream& os) const override; //!< Sends teh seralized format of a pfc_service_signoff over the provided  ostream.
+  Error deserialize(std::istream& is) override; //!< Marshalls a seralized service signoff and inflates it the data binding.
+};
+//!< Stream Operator for converting a pfc_service_signoff over an ostream
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_service_signoff&);
+//-----------------------------------------------------------------------
+// Comparison Operators
+//-----------------------------------------------------------------------
+//! Equivalance Operator for pfc_service_signoffs
+bool SUSTAIN_FRAMEWORK_API operator==(const pfc_service_signoff&, const pfc_service_signoff&);
+//! Implemented as ! operator==()
+bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_service_signoff&, const pfc_service_signoff&);
+
+//-------------------------------------Service ServiceList--------------------------------------------------------------------------
+constexpr pfc_uint REGISTRY_LIST_REQUEST = 0x00000003; //!<  value returned by type() from a pfc_registry_request
+constexpr pfc_uint REGISTRY_LIST_RESPONSE = 0x10000003; //!<  value returned by type() from a pfc_registry_request_response
+
+struct SUSTAIN_FRAMEWORK_API pfc_registry_request : pfc_message {
+  pfc_uint _message_type = REGISTRY_LIST_REQUEST; //!< value returned by TYPE. Shoudld be constant for any specific message type unless a deseralization error has occured.
+  pfc_ushort _port; //!< Stores a listinging port of the registered remote service
+  pfc_protocol _protacol = pfc_protocol::pub_sub; //!< Stores teh protacol used byt the registered service
+  pfc_string _name; //!< Human Readable Name of the Service
+  pfc_string _address; //!< Valid URI for communicating with the service. Depending on the protcol implementation may be an IP4/IP6 or System Socket
+  pfc_string _brief; //!< Human Description of the service and its feature set.
+
+  ~pfc_registry_request() override;
+
+  size_t Length() const override; //!< Returns the length of the encoded message
+  pfc_uint Type() const override; //!< Returns teh _message_type of an encoded message
+  Error serialize(std::ostream& os) const override; //!< Sends teh seralized format of a pfc_registry_request over the provided  ostream.
+  Error deserialize(std::istream& is) override; //!< Marshalls a seralized service ServiceList and inflates it the data binding.
+};
+//!< Stream Operator for converting a pfc_registry_request over an ostream
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_registry_request&);
+//-----------------------------------------------------------------------
+// Comparison Operators
+//-----------------------------------------------------------------------
+//! Equivalance Operator for pfc_registry_requests
+bool SUSTAIN_FRAMEWORK_API operator==(const pfc_registry_request&, const pfc_registry_request&);
+//! Implemented as ! operator==()
+bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_registry_request&, const pfc_registry_request&);
+
+
+struct SUSTAIN_FRAMEWORK_API pfc_registry_response : pfc_message {
+  pfc_uint _message_type = REGISTRY_LIST_RESPONSE; //!< value returned by TYPE. Shoudld be constant for any specific message type unless a deseralization error has occured.
+  pfc_ushort _port; //!< Stores a listinging port of the registered remote service
+  pfc_protocol _protacol = pfc_protocol::pub_sub; //!< Stores teh protacol used byt the registered service
+  pfc_string _name; //!< Human Readable Name of the Service
+  pfc_string _address; //!< Valid URI for communicating with the service. Depending on the protcol implementation may be an IP4/IP6 or System Socket
+  pfc_string _brief; //!< Human Description of the service and its feature set.
+
+  ~pfc_registry_response() override;
+
+  size_t Length() const override; //!< Returns the length of the encoded message
+  pfc_uint Type() const override; //!< Returns teh _message_type of an encoded message
+  Error serialize(std::ostream& os) const override; //!< Sends teh seralized format of a pfc_registry_response over the provided  ostream.
+  Error deserialize(std::istream& is) override; //!< Marshalls a seralized service ServiceList and inflates it the data binding.
+};
+//!< Stream Operator for converting a pfc_registry_response over an ostream
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_registry_response&);
+//-----------------------------------------------------------------------
+// Comparison Operators
+//-----------------------------------------------------------------------
+//! Equivalance Operator for pfc_registry_responses
+bool SUSTAIN_FRAMEWORK_API operator==(const pfc_registry_response&, const pfc_registry_response&);
+//! Implemented as ! operator==()
+bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_registry_response&, const pfc_registry_response&);
+
+//-------------------------------------Service ServiceList----------------------------------------//-------------------------------------Service ServiceList--------------------------------------------------------------------------
+constexpr pfc_uint CONNECTION_HERTBEAT_REQUEST = 0x00000004; //!<  value returned by type() from a pfc_heartbeat_request
+constexpr pfc_uint CONNECTION_HERTBEAT_RESPONSE = 0x10000004; //!<  value returned by type() from a pfc_heartbeat_request_response
+
+struct SUSTAIN_FRAMEWORK_API pfc_heartbeat_request : pfc_message {
+  pfc_uint _message_type = CONNECTION_HERTBEAT_REQUEST; //!< value returned by TYPE. Shoudld be constant for any specific message type unless a deseralization error has occured.
+  pfc_ushort _port; //!< Stores a listinging port of the registered remote service
+  pfc_protocol _protacol = pfc_protocol::pub_sub; //!< Stores teh protacol used byt the registered service
+  pfc_string _name; //!< Human Readable Name of the Service
+  pfc_string _address; //!< Valid URI for communicating with the service. Depending on the protcol implementation may be an IP4/IP6 or System Socket
+  pfc_string _brief; //!< Human Description of the service and its feature set.
+
+  ~pfc_heartbeat_request() override;
+
+  size_t Length() const override; //!< Returns the length of the encoded message
+  pfc_uint Type() const override; //!< Returns teh _message_type of an encoded message
+  Error serialize(std::ostream& os) const override; //!< Sends teh seralized format of a pfc_heartbeat_request over the provided  ostream.
+  Error deserialize(std::istream& is) override; //!< Marshalls a seralized service ServiceList and inflates it the data binding.
+};
+//!< Stream Operator for converting a pfc_heartbeat_request over an ostream
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_heartbeat_request&);
+//-----------------------------------------------------------------------
+// Comparison Operators
+//-----------------------------------------------------------------------
+//! Equivalance Operator for pfc_heartbeat_requests
+bool SUSTAIN_FRAMEWORK_API operator==(const pfc_heartbeat_request&, const pfc_heartbeat_request&);
+//! Implemented as ! operator==()
+bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_heartbeat_request&, const pfc_heartbeat_request&);
+
+struct SUSTAIN_FRAMEWORK_API pfc_heartbeat_response : pfc_message {
+  pfc_uint _message_type = CONNECTION_HERTBEAT_RESPONSE; //!< value returned by TYPE. Shoudld be constant for any specific message type unless a deseralization error has occured.
+  pfc_ushort _port; //!< Stores a listinging port of the registered remote service
+  pfc_protocol _protacol = pfc_protocol::pub_sub; //!< Stores teh protacol used byt the registered service
+  pfc_string _name; //!< Human Readable Name of the Service
+  pfc_string _address; //!< Valid URI for communicating with the service. Depending on the protcol implementation may be an IP4/IP6 or System Socket
+  pfc_string _brief; //!< Human Description of the service and its feature set.
+
+  ~pfc_heartbeat_response() override;
+
+  size_t Length() const override; //!< Returns the length of the encoded message
+  pfc_uint Type() const override; //!< Returns teh _message_type of an encoded message
+  Error serialize(std::ostream& os) const override; //!< Sends teh seralized format of a pfc_heartbeat_response over the provided  ostream.
+  Error deserialize(std::istream& is) override; //!< Marshalls a seralized service ServiceList and inflates it the data binding.
+};
+//!< Stream Operator for converting a pfc_heartbeat_response over an ostream
+SUSTAIN_FRAMEWORK_API std::ostream& operator<<(std::ostream&, const pfc_heartbeat_response&);
+//-----------------------------------------------------------------------
+// Comparison Operators
+//-----------------------------------------------------------------------
+//! Equivalance Operator for pfc_heartbeat_responses
+bool SUSTAIN_FRAMEWORK_API operator==(const pfc_heartbeat_response&, const pfc_heartbeat_response&);
+//! Implemented as ! operator==()
+bool SUSTAIN_FRAMEWORK_API operator!=(const pfc_heartbeat_response&, const pfc_heartbeat_response&);
 
 /**
   *!  sizeof for pfc_types
@@ -306,7 +444,7 @@ inline Error deserialize_pfc_type(std::istream& os)
 //!  Veradic template for inflating seralization messages
 //!
 template <typename T, typename... VAR>
-Error deserialize_pfc_type(std::istream& os,
+inline Error deserialize_pfc_type(std::istream& os,
                            T& first, VAR&... args)
 {
   auto error = deserialize_pfc_type(os, first);

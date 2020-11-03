@@ -79,9 +79,9 @@ Multicast_Sender::Implementation::~Implementation()
 Error Multicast_Sender::Implementation::multicast_setup(const std::string& multicast_address, uint16_t port)
 {
   boost::system::error_code ec;
-  const auto multicast_address = boost::asio::ip::make_address(multicast_address, ec);
+  const auto boost_multicast_address = boost::asio::ip::make_address(multicast_address, ec);
   if (!ec) {
-    endpoint = boost::asio::ip::udp::endpoint(multicast_address, port);
+    endpoint = boost::asio::ip::udp::endpoint(boost_multicast_address, port);
     socket = boost::asio::ip::udp::socket(io_context, endpoint.protocol());
   } else {
     system_status = Error::Code::PFC_IP_PARSE_ERROR;
