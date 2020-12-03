@@ -1,0 +1,1 @@
+Sustain is a C++ based, open source, multi-platform (Windows, Mac, and Linux), designed to allow despierate training sessions at the point of demand based on avaliable equipment. This SDK allow users to incorperate SUSTAIN technologiy in to there own applications.`

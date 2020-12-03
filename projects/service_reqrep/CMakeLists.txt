@@ -61,6 +61,9 @@ if (${PREFIX}_BUILD_STATIC)
 endif()
 
 add_executable(${PROJECT_NAME} ${${PREFIX}_SOURCES} ${${PREFIX}_HEADERS})
+if(WIN32)
+  target_sources(${PROJECT_NAME}   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Sustain.rc)
+endif()
 set_target_properties(${PROJECT_NAME}
   PROPERTIES
   DEFINE_SYMBOL ${PROJECT_NAME}_EXPORTS
