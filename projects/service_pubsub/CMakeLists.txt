@@ -6,7 +6,7 @@ cmake_policy(VERSION 3.12.0)
 ###############################################################################
 # Options
 ###############################################################################
-option(${ROOT_PROJECT_NAME}_BUILD_NETWORKING "Toggle building of cmd_bio tools" ON)
+option(${ROOT_PROJECT_NAME}_BUILD_NETWORKING "Toggle building of Sustain tools" ON)
 if(${ROOT_PROJECT_NAME}_BUILD_NETWORKING)
 ###############################################################################
 # Base Variables

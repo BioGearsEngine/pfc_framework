@@ -21,12 +21,14 @@ include(cmake/UseGit.cmake)
 
  list(APPEND CMAKE_MODULE_PATH   ${PROJECT_SOURCE_DIR}/cmake  ${PROJECT_SOURCE_DIR}/cmake/common )
 
- message(STATUS "
-    Using the following search paths
-    CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}
-    CMAKE_PREFIX_PATH  = ${CMAKE_PREFIX_PATH}
-    CMAKE_FIND_ROOT_PATH = ${CMAKE_FIND_ROOT_PATH}
-    ")
+find_package(Git QUIET)
+configure_version_information(GIT_SUCESS MAJOR 7 MINOR 3 PATCH 1 TWEAK "Source" )
+if(GIT_FOUND AND NOT GIT_SUCESS)
+  # Update these variables to ensure out of source build have some sane tags
+  message(WARNING "GIT_EXECUTABLE was not found or no corrisponding GIT_REPO is avaliable." 
+  "If you are building with in a git repo you should ensure GIT is in your current path." 
+	"If you are building outside of a repo ignore this message.")
+endif()
 
  add_subdirectory(projects)
  
