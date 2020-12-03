@@ -1,6 +1,6 @@
 include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_NAME "Sustain Scenario Builder")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Interface for developing Sustain Scenario Files")
+set(CPACK_PACKAGE_NAME "Sustain Framework")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Sustain Networking SDK")
 set(CPACK_PACKAGE_VENDOR "Applied Resaerch Associates")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.txt")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
